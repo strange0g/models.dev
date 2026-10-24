@@ -15,7 +15,8 @@ import { factorBaseModel, resolveCanonicalBaseModel } from "./openrouter.js";
 const API_ENDPOINT = "https://inference.baseten.co/v1/models";
 const MODELS_DIR = path.join(import.meta.dirname, "..", "..", "..", "..", "..", "models");
 const DECISION_PREFIX = "decision-models/";
-const DECISION_HEADER = "# Decision model: POST /v1/systemone (https://docs.baseten.co/inference/model-apis/decision-models)\n";
+const DECISION_HEADER = "# Decision model: POST /v1/systemone (https://docs.baseten.co/inference/model-apis/decision-models)\n"
+  + "# Images: image_url parts in a user message under state.messages (https://docs.baseten.co/reference/inference-api/system-one#image-inputs)\n";
 
 const Price = z.union([z.string(), z.number()]);
 
@@ -127,8 +128,12 @@ export function basetenV2Set(cacheRead: number | undefined, current: Record<stri
   };
 }
 
-// Both packages post to `${baseURL}/systemone`.
-const SYSTEMONE_SDK = { aisdk: "@ai-sdk/typesafe-ai", opencodeai: "@opencode/ai/providers/typesafe-ai" };
+// Both packages post to `${baseURL}/systemone`. Baseten takes images as
+// `image_url` parts in a user message under `state.messages`.
+const SYSTEMONE = {
+  sdk: { aisdk: "@ai-sdk/typesafe-ai", opencodeai: "@opencode/ai/providers/typesafe-ai" },
+  compatibility: { image_input: "messages" },
+};
 
 // Decision models are served on POST /v1/systemone, not chat completions, so
 // they are v2-only. The catalog's `name` is the Base Labs lab model ID.
@@ -147,7 +152,7 @@ export function buildBasetenDecisionModel(
   if (model.context_length !== (lab.limit as { context?: number } | undefined)?.context) {
     doc.limit = { context: model.context_length };
   }
-  const api = lab.type === "decision" ? { systemone: { sdk: SYSTEMONE_SDK } } : current?.api;
+  const api = lab.type === "decision" ? { systemone: SYSTEMONE } : current?.api;
   if (api !== undefined) doc.api = api;
   doc.cost = { text: { input: { price: input }, output: { price: output } } };
   return doc;

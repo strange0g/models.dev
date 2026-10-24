@@ -371,7 +371,9 @@ export const CompatibilityV2 = z
     // TypeSafe's `assets` map, referenced from strings, with the
     // `TypeSafe-Danger-Zone-Images: true` header. "images": a top-level `images`
     // list next to `state`. "state": chat-style `image_url` items in a `state` list.
-    image_input: z.enum(["assets", "images", "state"]).optional(),
+    // "messages": `image_url` parts in a user message's `content` under
+    // `state.messages`.
+    image_input: z.enum(["assets", "images", "state", "messages"]).optional(),
   })
   .strict();
 
