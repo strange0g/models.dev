@@ -174,6 +174,7 @@ test("Baseten decision models get the systemone table, new or stale", async () =
       name,
       context_length: await lab(name),
       max_completion_tokens: undefined,
+      input_modalities: ["text", "image"],
       pricing: { prompt: "0", completion: "0" },
       supported_features: [],
     });
@@ -183,6 +184,10 @@ test("Baseten decision models get the systemone table, new or stale", async () =
         sdk: { aisdk: "@ai-sdk/typesafe-ai", opencodeai: "@opencode/ai/providers/typesafe-ai" },
         compatibility: { image_input: "messages" },
       },
+    });
+    // A text-only decision model gets no image placement.
+    expect(buildBasetenDecisionModel({ ...models[1]!, input_modalities: ["text"] }, undefined)?.api).toEqual({
+      systemone: { sdk: { aisdk: "@ai-sdk/typesafe-ai", opencodeai: "@opencode/ai/providers/typesafe-ai" } },
     });
 
     const provider = { ...baseten, modelsDir, fetchModels: async () => ({ data: models }) };
